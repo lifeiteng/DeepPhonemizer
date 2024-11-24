@@ -57,7 +57,10 @@ class Predictor:
             decoded = self.text_tokenizer.decode(
                 sequence=input, remove_special_tokens=True)
             if len(decoded) == 0:
-                predictions[word] = ([], [])
+                if num_prons > 1:
+                    predictions[word] = [([], [])]
+                else:
+                    predictions[word] = ([], [])
             else:
                 valid_texts.add(word)
 
