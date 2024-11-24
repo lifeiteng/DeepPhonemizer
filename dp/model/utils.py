@@ -1,5 +1,5 @@
 import math
-from typing import Tuple
+from typing import Tuple, Union, List
 
 import torch
 from torch.nn.utils.rnn import pad_sequence
@@ -35,8 +35,28 @@ class PositionalEncoding(torch.nn.Module):
         return self.dropout(x)
 
 
-def get_dedup_tokens(logits_batch: torch.Tensor) \
-        -> Tuple[torch.Tensor, torch.Tensor]:
+def get_nprons(logits: torch.Tensor, num_prons: int = 1) -> List[Tuple[torch.Tensor, torch.Tensor]]:
+    out_tokens, out_probs = [], []
+    n_sampled_indices = torch.multinomial(logits, num_prons)
+    for k in range(num_prons):
+        sampled_indices = n_sampled_indices[:, k]
+        sampled_logits = logits[sampled_indices!=0]
+        sampled_indices = sampled_indices[sampled_indices!=0]
+        cons_tokens, counts = torch.unique_consecutive(sampled_indices, return_counts=True)
+        out_probs_i = torch.zeros(len(counts), device=logits.device)
+        ind = 0
+        for i, c in enumerate(counts):
+            max_logit = sampled_logits[ind:ind + c].max()
+            out_probs_i[i] = max_logit
+            ind = ind + c
+        out_tokens.append(cons_tokens)
+        out_probs.append(out_probs_i)
+
+    return out_tokens, out_probs
+
+
+def get_dedup_tokens(logits_batch: torch.Tensor, num_prons: int = 1) \
+        -> Union[Tuple[torch.Tensor, torch.Tensor], List[Tuple[torch.Tensor, torch.Tensor]]]:
     """Converts a batch of logits into the batch most probable tokens and their probabilities.
 
     Args:
@@ -47,6 +67,21 @@ def get_dedup_tokens(logits_batch: torch.Tensor) \
       is a tensor (token probabilities)
 
     """
+    if num_prons > 1:
+        batch_size = logits_batch.size(0)
+        batch_out_tokens, batch_out_probs = [], []
+        out_tokens, out_probs = get_dedup_tokens(logits_batch, num_prons=1)
+        for i in range(batch_size):
+            batch_out_tokens.append([out_tokens[i]])
+            batch_out_probs.append([out_probs[i]])
+
+        logits_batch = logits_batch.softmax(-1)
+        for i in range(batch_size):
+            out_tokens, out_probs = get_nprons(logits_batch[i], num_prons  - 1)
+            batch_out_tokens[i].extend(out_tokens)
+            batch_out_probs[i].extend(out_probs)
+
+        return batch_out_tokens, batch_out_probs
 
     logits_batch = logits_batch.softmax(-1)
     out_tokens, out_probs = [], []

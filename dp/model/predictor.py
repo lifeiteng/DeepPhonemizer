@@ -32,7 +32,8 @@ class Predictor:
     def __call__(self,
                  words: List[str],
                  lang: str,
-                 batch_size: int = 8) -> List[Prediction]:
+                 batch_size: int = 8,
+                 num_prons: int = 1) -> List[Prediction]:
         """
         Predicts phonemes for a list of words.
 
@@ -40,9 +41,11 @@ class Predictor:
           words (list): List of words to predict.
           lang (str): Language of texts.
           batch_size (int): Size of batch for model input to speed up inference.
+          num_prons (int): Number of pronunciations to predict for each word. (Default value = 1)
 
         Returns:
-          List[Prediction]: A list of result objects containing (word, phonemes, phoneme_tokens, token_probs, confidence)
+          num_prons <= 1: List[Prediction]: A list of result objects containing (word, phonemes, phoneme_tokens, token_probs, confidence)
+          num_prons >= 2: List[List[Prediction]]
         """
 
         predictions = dict()
@@ -60,28 +63,42 @@ class Predictor:
 
         valid_texts = sorted(list(valid_texts), key=lambda x: len(x))
         batch_pred = self._predict_batch(texts=valid_texts, batch_size=batch_size,
-                                         language=lang)
+                                         language=lang,
+                                         num_prons=num_prons)
         predictions.update(batch_pred)
 
         output = []
         for word in words:
-            tokens, probs = predictions[word]
-            out_phons = self.phoneme_tokenizer.decode(
-                sequence=tokens, remove_special_tokens=True)
-            out_phons_tokens = self.phoneme_tokenizer.decode(
-                sequence=tokens, remove_special_tokens=False)
-            output.append(Prediction(word=word,
-                                     phonemes=''.join(out_phons),
-                                     phoneme_tokens=out_phons_tokens,
-                                     confidence=_product(probs),
-                                     token_probs=probs))
+            if num_prons > 1:
+                pronunciations = []
+                for (tokens, probs) in predictions[word]:
+                    out_phons = self.phoneme_tokenizer.decode(sequence=tokens, remove_special_tokens=True)
+                    out_phons_tokens = self.phoneme_tokenizer.decode(sequence=tokens, remove_special_tokens=False)
+                    pronunciations.append(Prediction(word=word,
+                                          phonemes=''.join(out_phons),
+                                          phoneme_tokens=out_phons_tokens,
+                                          confidence=_product(probs),
+                                          token_probs=probs))
+                output.append(pronunciations)
+            else:
+                tokens, probs = predictions[word]
+                out_phons = self.phoneme_tokenizer.decode(
+                    sequence=tokens, remove_special_tokens=True)
+                out_phons_tokens = self.phoneme_tokenizer.decode(
+                    sequence=tokens, remove_special_tokens=False)
+                output.append(Prediction(word=word,
+                                        phonemes=''.join(out_phons),
+                                        phoneme_tokens=out_phons_tokens,
+                                        confidence=_product(probs),
+                                        token_probs=probs))
 
         return output
 
     def _predict_batch(self,
                        texts: List[str],
                        batch_size: int,
-                       language: str) \
+                       language: str,
+                       num_prons: int) \
             -> Dict[str, Tuple[List[int], List[float]]]:
         """
         Returns dictionary with key = word and val = Tuple of (phoneme tokens, phoneme probs)
@@ -107,11 +124,21 @@ class Predictor:
                 'start_index': start_inds
             }
             with torch.no_grad():
-                output_batch, probs_batch = self.model.generate(batch)
-            output_batch, probs_batch = output_batch.cpu(), probs_batch.cpu()
-            for text, output, probs in zip(text_batch, output_batch, probs_batch):
-                seq_len = _get_len_util_stop(output, self.phoneme_tokenizer.end_index)
-                predictions[text] = (output[:seq_len].tolist(), probs[:seq_len].tolist())
+                output_batch, probs_batch = self.model.generate(batch, num_prons=num_prons)
+
+            if num_prons > 1:
+                for text, output, probs in zip(text_batch, output_batch, probs_batch):
+                    pronunciations = []
+                    for _output, _probs in zip(output, probs):
+                        _output, _probs = _output.cpu(), _probs.cpu()
+                        seq_len = _get_len_util_stop(_output, self.phoneme_tokenizer.end_index)
+                        pronunciations.append((_output[:seq_len].tolist(), _probs[:seq_len].tolist()))
+                    predictions[text] = pronunciations
+            else:
+                output_batch, probs_batch = output_batch.cpu(), probs_batch.cpu()
+                for text, output, probs in zip(text_batch, output_batch, probs_batch):
+                    seq_len = _get_len_util_stop(output, self.phoneme_tokenizer.end_index)
+                    predictions[text] = (output[:seq_len].tolist(), probs[:seq_len].tolist())
 
         return predictions
 
