@@ -74,7 +74,7 @@ def get_dedup_tokens(logits_batch: torch.Tensor, num_prons: int = 1) \
         for i in range(batch_size):
             batch_out_tokens.append([out_tokens[i]])
             batch_out_probs.append([out_probs[i]])
-        
+
         logits_batch = logits_batch.softmax(-1)
         for i in range(batch_size):
             out_tokens, out_probs = get_nprons(logits_batch[i], num_prons  - 1)
