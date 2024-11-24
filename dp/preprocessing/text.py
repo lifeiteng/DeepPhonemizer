@@ -132,8 +132,19 @@ class SequenceTokenizer:
             sequence = sequence[::self.char_repeats]
         decoded = [self.idx_to_token[int(t)] for t in sequence if int(t) in self.idx_to_token]
         if remove_special_tokens:
-            decoded = [d for d in decoded if d not in self.special_tokens]
+            decoded = self.remove_special_tokens(decoded)
         return decoded
+
+    def remove_special_tokens(self, decoded: List[str]) -> List[str]:
+        """Removes special tokens from a decoded sequence.
+
+        Args:
+          decoded (List[str]): Decoded sequence of symbols.
+
+        Returns:
+          List[str]: Decoded sequence with special tokens removed.
+        """
+        return [d for d in decoded if d not in self.special_tokens]
 
     def _get_start_index(self, language: str) -> int:
         lang_token = self._make_start_token(language)
