@@ -4,21 +4,21 @@ long_description = """DeepPhonemizer is a multilingual grapheme-to-phoneme model
 technology and is optimized for usage in production systems such as TTS. In particular, the library should
 be accurate, fast, easy to use. Moreover, you can train a custom model on your own dataset in a few lines of code.
 
-DeepPhonemizer is compatible with Python 3.6+ and is distributed under the MIT license.
+DeepPhonemizer is compatible with Python 3.9+ and is distributed under the MIT license.
 
 Read the documentation at: https://as-ideas.github.io/DeepPhonemizer/
 """
 
 setup(
-    name='deep-phonemizer',
-    version='0.0.19',
-    author='Christian Schäfer',
-    author_email='c.schaefer.home@gmail.com',
+    name='g2p-phonemizer',
+    version='0.1.0',
+    author='Feiteng Li',
+    author_email='lifeiteng0422@gmail.com',
     description='Grapheme to phoneme conversion with deep learning.',
     long_description=long_description,
     long_description_content_type='text/x-rst',
     license='MIT',
-    install_requires=['torch>=1.2.0', 'tqdm>=4.38.0', 'PyYAML>=5.1', 'tensorboard',
+    install_requires=['torch>=2.1.0', 'tqdm>=4.38.0', 'PyYAML>=5.1', 'tensorboard',
                       'certifi>=2022.12.7', 'wheel>=0.38.0', 'setuptools>=65.5.1',
                       "cached-path", "num2words"],
     extras_require={
@@ -36,10 +36,11 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',

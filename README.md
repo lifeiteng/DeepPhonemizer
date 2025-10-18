@@ -30,11 +30,13 @@ Check out the [inference](https://colab.research.google.com/github/as-ideas/Deep
 
 Read the documentation at: https://as-ideas.github.io/DeepPhonemizer/
 
+### Base
+* [https://github.com/spring-media/DeepPhonemizer](https://github.com/spring-media/DeepPhonemizer)
 
 ### Installation
 
 ```bash
-pip install deep-phonemizer
+pip install g2p-phonemizer
 ```
 
 ### Quickstart
