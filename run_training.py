@@ -3,9 +3,9 @@ from pathlib import Path
 import torch
 import torch.multiprocessing as mp
 
-from dp.preprocess import preprocess
-from dp.train import train
-from dp.utils.io import read_config
+from g2pp.preprocess import preprocess
+from g2pp.train import train
+from g2pp.utils.io import read_config
 
 config_file_path = Path('logging.yaml')
 config = read_config(config_file_path)

@@ -1,6 +1,6 @@
 import unittest
 
-from dp.training.metrics import word_error, phoneme_error
+from g2pp.training.metrics import word_error, phoneme_error
 
 
 class TestWordError(unittest.TestCase):

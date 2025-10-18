@@ -4,12 +4,12 @@ from pathlib import Path
 import torch
 from torch.distributed import init_process_group
 
-from dp.model.model import load_checkpoint, ModelType, \
+from g2pp.model.model import load_checkpoint, ModelType, \
     create_model
-from dp.preprocessing.text import Preprocessor
-from dp.training.trainer import Trainer
-from dp.utils.io import read_config
-from dp.utils.logging import get_logger
+from g2pp.preprocessing.text import Preprocessor
+from g2pp.training.trainer import Trainer
+from g2pp.utils.io import read_config
+from g2pp.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

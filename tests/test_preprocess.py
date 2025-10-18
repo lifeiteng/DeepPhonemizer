@@ -4,10 +4,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from dp import preprocess
-from dp.preprocess import preprocess
-from dp.preprocessing.text import Preprocessor
-from dp.utils.io import read_config, unpickle_binary, save_config
+from g2pp import preprocess
+from g2pp.preprocess import preprocess
+from g2pp.preprocessing.text import Preprocessor
+from g2pp.utils.io import read_config, unpickle_binary, save_config
 
 
 class TestPreprocess(unittest.TestCase):

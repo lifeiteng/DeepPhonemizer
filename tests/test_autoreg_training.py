@@ -7,12 +7,12 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from dp import preprocess
-from dp.model.model import AutoregressiveTransformer
-from dp.model.predictor import Predictor
-from dp.preprocess import preprocess
-from dp.train import train
-from dp.utils.io import read_config, save_config
+from g2pp import preprocess
+from g2pp.model.model import AutoregressiveTransformer
+from g2pp.model.predictor import Predictor
+from g2pp.preprocess import preprocess
+from g2pp.train import train
+from g2pp.utils.io import read_config, save_config
 
 
 class TestAutoregTraining(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from dp.preprocessing.text import SequenceTokenizer
+from g2pp.preprocessing.text import SequenceTokenizer
 
 
 class TestSequenceTokenizer(unittest.TestCase):

@@ -4,9 +4,9 @@ from unittest.mock import patch
 
 import torch
 
-from dp.model.model import Model
-from dp.model.predictor import Predictor
-from dp.preprocessing.text import Preprocessor
+from g2pp.model.model import Model
+from g2pp.model.predictor import Predictor
+from g2pp.preprocessing.text import Preprocessor
 
 
 class ModelMock:

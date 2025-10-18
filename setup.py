@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-long_description = """DeepPhonemizer is a multilingual grapheme-to-phoneme modeling library that leverages recent deep learning 
+long_description = """DeepPhonemizer is a multilingual grapheme-to-phoneme modeling library that leverages recent deep learning
 technology and is optimized for usage in production systems such as TTS. In particular, the library should
 be accurate, fast, easy to use. Moreover, you can train a custom model on your own dataset in a few lines of code.
 
@@ -11,7 +11,7 @@ Read the documentation at: https://as-ideas.github.io/DeepPhonemizer/
 
 setup(
     name='g2p-phonemizer',
-    version='0.1.0',
+    version='0.4.0',
     author='Feiteng Li',
     author_email='lifeiteng0422@gmail.com',
     description='Grapheme to phoneme conversion with deep learning.',
