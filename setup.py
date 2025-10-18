@@ -10,7 +10,7 @@ Read the documentation at: https://as-ideas.github.io/DeepPhonemizer/
 """
 
 setup(
-    name='deep-phonemizer',
+    name='dp',
     version='0.0.19',
     author='Christian Schäfer',
     author_email='c.schaefer.home@gmail.com',
@@ -36,10 +36,11 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
