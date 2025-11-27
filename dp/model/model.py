@@ -96,12 +96,13 @@ class ForwardTransformer(Model):
 
     @torch.jit.export
     def generate(self,
-                 batch: Dict[str, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
+                 batch: Dict[str, torch.Tensor], num_prons: int = 1) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Inference pass on a batch of tokenized texts.
 
         Args:
           batch (Dict[str, torch.Tensor]): Input batch with entry 'text' (text tensor).
+          num_prons (int): Number of pronunciations to output.
 
         Returns:
           Tuple: The first element is a Tensor (phoneme tokens) and the second element
@@ -110,7 +111,7 @@ class ForwardTransformer(Model):
 
         with torch.no_grad():
             x = self.forward(batch)
-        tokens, logits = get_dedup_tokens(x)
+        tokens, logits = get_dedup_tokens(x, num_prons=num_prons)
         return tokens, logits
 
     @classmethod
