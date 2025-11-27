@@ -27,7 +27,7 @@ class Model(torch.nn.Module, ABC):
         super().__init__()
 
     @abstractmethod
-    def generate(self, batch: Dict[str, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
+    def generate(self, batch: Dict[str, torch.Tensor], num_prons: int = 1) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Generates phonemes for a text batch
 
@@ -35,6 +35,7 @@ class Model(torch.nn.Module, ABC):
           batch (Dict[str, torch.Tensor]): Dictionary containing 'text' (tokenized text tensor),
                        'text_len' (text length tensor),
                        'start_index' (phoneme start indices for AutoregressiveTransformer)
+          num_prons (int): Number of pronunciations to output.
 
         Returns:
           Tuple[torch.Tensor, torch.Tensor]: The predictions. The first element is a tensor (phoneme tokens)
@@ -102,7 +103,7 @@ class ForwardTransformer(Model):
 
         Args:
           batch (Dict[str, torch.Tensor]): Input batch with entry 'text' (text tensor).
-          num_prons (int): Number of pronunciations to output.
+          num_prons (int): Number of pronunciations for very item.
 
         Returns:
           Tuple: The first element is a Tensor (phoneme tokens) and the second element
@@ -192,7 +193,8 @@ class AutoregressiveTransformer(Model):
     @torch.jit.export
     def generate(self,
                  batch: Dict[str, torch.Tensor],
-                 max_len: int = 100) -> Tuple[torch.Tensor, torch.Tensor]:
+                 max_len: int = 100,
+                 num_prons: int = 1) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Inference pass on a batch of tokenized texts.
 
@@ -215,34 +217,53 @@ class AutoregressiveTransformer(Model):
         with torch.no_grad():
             input = self.encoder(input)
             input = self.pos_encoder(input)
-            input = self.transformer.encoder(input,
-                                             src_key_padding_mask=src_pad_mask)
+            input = self.transformer.encoder(input, src_key_padding_mask=src_pad_mask)
+
+            if num_prons > 1:
+                input = input.repeat(1, num_prons, 1)
+                src_pad_mask = src_pad_mask.repeat(num_prons, 1)   
+                start_index = start_index.repeat(num_prons)      
+
+            tgt_mask = _generate_square_subsequent_mask(max_len + 1).to(input.device)
+
             out_indices = start_index.unsqueeze(0)
             out_logits = []
             for i in range(max_len):
-                tgt_mask = _generate_square_subsequent_mask(i + 1).to(input.device)
                 output = self.decoder(out_indices)
                 output = self.pos_decoder(output)
                 output = self.transformer.decoder(output,
                                                   input,
                                                   memory_key_padding_mask=src_pad_mask,
-                                                  tgt_mask=tgt_mask)
+                                                  tgt_mask=tgt_mask[:i+1, :i+1])
                 output = self.fc_out(output)  # shape: [T, N, V]
-                out_tokens = output.argmax(2)[-1:, :]
+                if num_prons > 1:  # 
+                    out_tokens = torch.multinomial(output[-1].softmax(-1), 1).transpose(0, 1)
+                else:
+                    out_tokens = output.argmax(2)[-1:, :]
                 out_logits.append(output[-1:, :, :])
 
                 out_indices = torch.cat([out_indices, out_tokens], dim=0)
                 stop_rows, _ = torch.max(out_indices == self.end_index, dim=0)
-                if torch.sum(stop_rows) == batch_size:
+                if torch.sum(stop_rows) == batch_size * num_prons:
                     break
 
         out_indices = out_indices.transpose(0, 1)  # out shape [N, T]
         out_logits = torch.cat(out_logits, dim=0).transpose(0, 1) # out shape [N, T, V]
         out_logits = out_logits.softmax(-1)
         out_probs = torch.ones((out_indices.size(0), out_indices.size(1)))
+
+        if num_prons > 1:
+            out_logits = out_logits.cpu()
+            for i in range(out_indices.size(0)):
+                for j in range(0, out_indices.size(1)-1):
+                    out_probs[i, j+1] = out_logits[i, j, out_indices[i, j]]
+            
+            return [out_indices[b::batch_size] for b in range(batch_size)], [out_probs[b::batch_size] for b in range(batch_size)]
+
         for i in range(out_indices.size(0)):
             for j in range(0, out_indices.size(1)-1):
                 out_probs[i, j+1] = out_logits[i, j].max()
+
         return out_indices, out_probs
 
     @classmethod
