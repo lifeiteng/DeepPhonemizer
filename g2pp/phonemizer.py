@@ -237,7 +237,7 @@ class Phonemizer:
         elif 'phoneme_dict' in checkpoint:
             applied_phoneme_dict = checkpoint['phoneme_dict']
 
-        from dp.preprocessing.text import Preprocessor
+        from g2pp.preprocessing.text import Preprocessor
         preprocessor = Preprocessor.from_config(checkpoint['config'])
         predictor = Predictor(model=model, preprocessor=preprocessor)
         return Phonemizer(predictor=predictor,
