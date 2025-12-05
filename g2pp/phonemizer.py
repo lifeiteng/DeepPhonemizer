@@ -2,10 +2,8 @@ import re
 from itertools import zip_longest
 from typing import Dict, Union, List, Set
 
-from dp import PhonemizerResult
-from dp.model.model import load_checkpoint
-from dp.model.predictor import Predictor
-
+from g2pp import PhonemizerResult
+from g2pp.model.predictor import Predictor
 
 DEFAULT_PUNCTUATION = '().,:?!/–'
 
@@ -198,6 +196,39 @@ class Phonemizer:
         Returns:
           Phonemizer: Phonemizer object carrying the loaded model and, optionally, a phoneme dictionary.
         """
+        import torch
+        import gzip
+        import msgpack
+
+        from typing import Tuple, Dict, Any
+        from g2pp.model.model import ModelType, Model, create_model
+        from safetensors.torch import load_file as load_safetensors
+        from pathlib import Path
+
+
+        def load_checkpoint(checkpoint_path: str, device: str = 'cpu') -> Tuple[Model, Dict[str, Any]]:
+            device = torch.device(device)
+
+            checkpoint_path = str(checkpoint_path)
+            if Path(checkpoint_path[:-4] + '.safetensors').exists():
+                state_dict = load_safetensors(checkpoint_path[:-4] + '.safetensors', device=str(device))
+                with gzip.open(checkpoint_path, "rb") as f:
+                    config = msgpack.unpack(f, raw=False, strict_map_key=False)
+
+                checkpoint = {
+                    'model': state_dict,
+                    'config': config,
+                }
+            else:  # old format
+                checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+
+            model_type = checkpoint['config']['model']['type']
+            model_type = ModelType(model_type)
+            model = create_model(model_type, config=checkpoint['config'])
+            model.load_state_dict(checkpoint['model'])
+            model.eval()
+            return model, checkpoint
+
 
         model, checkpoint = load_checkpoint(checkpoint_path, device=device)
         applied_phoneme_dict = None
@@ -206,7 +237,7 @@ class Phonemizer:
         elif 'phoneme_dict' in checkpoint:
             applied_phoneme_dict = checkpoint['phoneme_dict']
 
-        from dp.preprocessing.text import Preprocessor
+        from g2pp.preprocessing.text import Preprocessor
         preprocessor = Preprocessor.from_config(checkpoint['config'])
         predictor = Predictor(model=model, preprocessor=preprocessor)
         return Phonemizer(predictor=predictor,

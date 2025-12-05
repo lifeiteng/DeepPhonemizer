@@ -6,8 +6,8 @@ import torch
 import torch.nn as nn
 from torch.nn import TransformerEncoderLayer, LayerNorm, TransformerEncoder
 
-from dp.model.utils import get_dedup_tokens, _make_len_mask, _generate_square_subsequent_mask, PositionalEncoding
-from dp.preprocessing.text import Preprocessor
+from g2pp.model.utils import get_dedup_tokens, _make_len_mask, _generate_square_subsequent_mask, PositionalEncoding
+from g2pp.preprocessing.text import Preprocessor
 
 
 class ModelType(Enum):
@@ -221,8 +221,8 @@ class AutoregressiveTransformer(Model):
 
             if num_prons > 1:
                 input = input.repeat(1, num_prons, 1)
-                src_pad_mask = src_pad_mask.repeat(num_prons, 1)   
-                start_index = start_index.repeat(num_prons)      
+                src_pad_mask = src_pad_mask.repeat(num_prons, 1)
+                start_index = start_index.repeat(num_prons)
 
             tgt_mask = _generate_square_subsequent_mask(max_len + 1).to(input.device)
 
@@ -236,7 +236,7 @@ class AutoregressiveTransformer(Model):
                                                   memory_key_padding_mask=src_pad_mask,
                                                   tgt_mask=tgt_mask[:i+1, :i+1])
                 output = self.fc_out(output)  # shape: [T, N, V]
-                if num_prons > 1:  # 
+                if num_prons > 1:  #
                     out_tokens = torch.multinomial(output[-1].softmax(-1), 1).transpose(0, 1)
                 else:
                     out_tokens = output.argmax(2)[-1:, :]
@@ -257,7 +257,7 @@ class AutoregressiveTransformer(Model):
             for i in range(out_indices.size(0)):
                 for j in range(0, out_indices.size(1)-1):
                     out_probs[i, j+1] = out_logits[i, j, out_indices[i, j]]
-            
+
             return [out_indices[b::batch_size] for b in range(batch_size)], [out_probs[b::batch_size] for b in range(batch_size)]
 
         for i in range(out_indices.size(0)):

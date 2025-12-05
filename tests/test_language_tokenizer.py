@@ -1,6 +1,6 @@
 import unittest
 
-from dp.preprocessing.text import LanguageTokenizer
+from g2pp.preprocessing.text import LanguageTokenizer
 
 
 class TestLanguageTokenizer(unittest.TestCase):

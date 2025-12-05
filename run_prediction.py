@@ -1,4 +1,4 @@
-from dp.phonemizer import Phonemizer
+from g2pp.phonemizer import Phonemizer
 
 if __name__ == '__main__':
 

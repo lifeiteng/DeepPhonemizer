@@ -11,7 +11,7 @@ Read the documentation at: https://as-ideas.github.io/DeepPhonemizer/
 
 setup(
     name='g2p-phonemizer',
-    version='0.1.4',
+    version='0.4.2',
     author='Feiteng Li',
     author_email='lifeiteng0422@gmail.com',
     description='Grapheme to phoneme conversion with deep learning.',
@@ -41,6 +41,7 @@ setup(
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: 3.13',
+        'Programming Language :: Python :: 3.14',
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',

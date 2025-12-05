@@ -1,6 +1,6 @@
 import unittest
 
-from dp.preprocessing.text import Preprocessor
+from g2pp.preprocessing.text import Preprocessor
 
 
 class TestPreprocessor(unittest.TestCase):

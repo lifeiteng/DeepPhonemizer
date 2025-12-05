@@ -1,6 +1,6 @@
 import unittest
 
-from dp.training.evaluation import evaluate_samples
+from g2pp.training.evaluation import evaluate_samples
 
 
 class TestEvaluation(unittest.TestCase):
