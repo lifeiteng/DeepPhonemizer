@@ -5,7 +5,7 @@ from typing import Dict, Union, List, Set
 from dp import PhonemizerResult
 from dp.model.model import load_checkpoint
 from dp.model.predictor import Predictor
-from dp.utils.logging import get_logger
+
 
 DEFAULT_PUNCTUATION = '().,:?!/–'
 
@@ -205,10 +205,9 @@ class Phonemizer:
             applied_phoneme_dict = lang_phoneme_dict
         elif 'phoneme_dict' in checkpoint:
             applied_phoneme_dict = checkpoint['phoneme_dict']
-        preprocessor = checkpoint['preprocessor']
+
+        from dp.preprocessing.text import Preprocessor
+        preprocessor = Preprocessor.from_config(checkpoint['config'])
         predictor = Predictor(model=model, preprocessor=preprocessor)
-        logger = get_logger(__name__)
-        model_step = checkpoint['step']
-        logger.debug(f'Initializing phonemizer with model step {model_step}')
         return Phonemizer(predictor=predictor,
                           lang_phoneme_dict=applied_phoneme_dict)
