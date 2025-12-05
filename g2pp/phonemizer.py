@@ -196,13 +196,15 @@ class Phonemizer:
         Returns:
           Phonemizer: Phonemizer object carrying the loaded model and, optionally, a phoneme dictionary.
         """
-        from typing import Tuple, Dict, Any
-        from dp.model.model import ModelType, Model, create_model
         import torch
-        from safetensors.torch import load_file as load_safetensors
-        from pathlib import Path
         import gzip
         import msgpack
+
+        from typing import Tuple, Dict, Any
+        from g2pp.model.model import ModelType, Model, create_model
+        from safetensors.torch import load_file as load_safetensors
+        from pathlib import Path
+
 
         def load_checkpoint(checkpoint_path: str, device: str = 'cpu') -> Tuple[Model, Dict[str, Any]]:
             device = torch.device(device)
